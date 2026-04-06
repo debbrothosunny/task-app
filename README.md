@@ -188,7 +188,6 @@ appify-task-project/
 ### Backend (Laravel)
 
 ```bash
-cd backend
 composer install
 cp .env.example .env
 php artisan key:generate
