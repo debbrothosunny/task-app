@@ -2,8 +2,10 @@
 
 import React, { useState } from 'react';
 import axios from '@/lib/axios';
+import { AxiosError } from 'axios';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -15,34 +17,33 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    const handleLogin = async (e: any) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
+const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
-        try {
-            // 1. For session-based authentication, setting CSRF cookie first is required
-            // This should be defined in your lib/axios
-            await axios.get('/sanctum/csrf-cookie');
-
-            // 2. Send login request
-            // On success, the server will set HttpOnly cookie in the browser
-            await axios.post('/api/login', { email, password });
-
-            // 3. No need to save token (LocalStorage Clean)
-            // Directly navigate to feed page
-            router.push('/feed');
-            
-        }  catch (error: any) { // এখানে : any যোগ করা হয়েছে
-            if (error.response && error.response.status === 401) {
-                setError('Invalid credentials. Please try again.');
-            } else {
-                setError('Something went wrong. Please check your connection.');
-            }
-        } finally {
-            setLoading(false);
+    try {
+        // CSRF কুকি
+        await axios.get('/sanctum/csrf-cookie');
+        
+        // লগইন রিকোয়েস্ট
+        await axios.post('/api/login', { email, password });
+        
+        router.push('/feed');
+        
+    } catch (error) {
+        // এখানে AxiosError ব্যবহার করছি
+        const axiosError = error as AxiosError;
+        
+        if (axiosError.response?.status === 401) {
+            setError('ইমেইল বা পাসওয়ার্ড ভুল।');
+        } else {
+            setError('কিছু সমস্যা হয়েছে। আবার চেষ্টা করুন।');
         }
-    };
+    } finally {
+        setLoading(false);
+    }
+};
 
     return (
         <section className="_social_login_wrapper _layout_main_wrapper">
