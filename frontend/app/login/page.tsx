@@ -33,7 +33,7 @@ export default function LoginPage() {
             // Directly navigate to feed page
             router.push('/feed');
             
-        } catch (error) {
+        }  catch (error: any) { // এখানে : any যোগ করা হয়েছে
             if (error.response && error.response.status === 401) {
                 setError('Invalid credentials. Please try again.');
             } else {
