@@ -133,7 +133,7 @@ export default function LoginPage() {
                                         </div>
                                         <div className="col-lg-6 col-xl-6 col-md-6 col-sm-12">
                                             <div className="_social_login_form_left text-end">
-                                                <Link href="/forgot-password" style={{ textDecoration: 'none' }}>
+                                                <Link href="#" style={{ textDecoration: 'none' }}>
                                                     <p className="_social_login_form_left_para" style={{ cursor: 'pointer' }}>Forgot password?</p>
                                                 </Link>
                                             </div>

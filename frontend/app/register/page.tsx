@@ -30,16 +30,17 @@ export default function Register() {
         setErrors({});
 
         try {
-            // 1. First fetch CSRF cookie to ensure session handshake
+            // ১. সেশন হ্যান্ডশেকের জন্য CSRF কুকি ফেচ করা
             await axios.get('/sanctum/csrf-cookie');
 
-            // 2. Send registration request
-            // On successful registration, Sanctum will automatically set session cookie in backend
+            // ২. রেজিস্ট্রেশন রিকোয়েস্ট পাঠানো
             await axios.post('/api/register', formData);
 
-            // 3. No need to save token (LocalStorage Clean)
-            // Directly navigate to feed page
-            router.push('/feed');
+            // ৩. সফলতার মেসেজ দেখানো
+            alert("Account created successfully! Please login to continue.");
+
+            // ৪. লগইন পেজে রিডাইরেক্ট করা
+            router.push('/login');
 
         } catch (error: any) {
             if (error.response && error.response.data.errors) {
