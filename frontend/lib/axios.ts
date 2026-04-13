@@ -1,27 +1,21 @@
 import axios from 'axios';
 
 const instance = axios.create({
-    baseURL: 'http://127.0.0.1:8000',
-    withCredentials: true, // To send session cookies
-    withXSRFToken: true,    // Required for CSRF protection
+    // রেলওয়ের ভেরিয়েবল থাকলে সেটা নেবে, না থাকলে লোকালহোস্ট নেবে
+    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000',
+    withCredentials: true,
+    withXSRFToken: true,
     headers: {
         'X-Requested-With': 'XMLHttpRequest',
         'Accept': 'application/json',
     }
 });
 
-// Response Interceptor: This will check every API response
+// Response Interceptor
 instance.interceptors.response.use(
-    (response) => {
-        // If request is successful, return response directly
-        return response;
-    },
+    (response) => response,
     (error) => {
-        // If backend returns 401 Unauthorized error (e.g., private mode or session expired)
         if (error.response && error.response.status === 401) {
-            console.warn("Session expired or unauthorized. Redirecting to login...");
-            
-            // Client-side redirect (to ensure logout flow)
             if (typeof window !== 'undefined') {
                 window.location.href = '/login'; 
             }
@@ -30,7 +24,6 @@ instance.interceptors.response.use(
     }
 );
 
-// Function to initialize CSRF token
 export const getCsrfToken = () => instance.get('/sanctum/csrf-cookie');
 
 export default instance;
