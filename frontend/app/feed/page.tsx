@@ -80,9 +80,14 @@ export default function FeedPage() {
 
             setPosts((prev) => {
                 if (isInitial) return newPosts;
+
                 // Filter duplicate IDs
-                const existingIds = new Set(prev.map(p => p.id));
-                const filtered = newPosts.filter(p => !existingIds.has(p.id));
+                // এখানে 'p' এর সাথে ': any' যোগ করা হয়েছে যাতে টাইপস্ক্রিপ্ট বুঝতে পারে
+                const existingIds = new Set(prev.map((p: any) => p.id));
+                
+                // এখানেও 'p' এর সাথে ': any' যোগ করে দেওয়া হলো
+                const filtered = newPosts.filter((p: any) => !existingIds.has(p.id));
+                
                 return [...prev, ...filtered]; 
             });
 
