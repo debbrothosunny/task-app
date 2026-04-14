@@ -1,6 +1,7 @@
 [phases.build]
 cmds = [
-    "composer install --optimize-autoloader --no-dev --no-interaction"
+    "composer install --optimize-autoloader --no-dev --no-interaction",
+    "ls /app/public"
 ]
 
 [start]

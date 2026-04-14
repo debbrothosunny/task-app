@@ -6,6 +6,9 @@
 :8080 {
     root * /app/public
     encode gzip
+    
+    try_files {path} {path}/ /index.php?{query}
+    
     php_server
     file_server
 }
