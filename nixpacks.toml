@@ -1,0 +1,10 @@
+[phases.build]
+cmds = [
+    "composer install --optimize-autoloader --no-dev --no-interaction",
+    "php artisan config:clear",
+    "php artisan route:clear",
+    "php artisan view:clear"
+]
+
+[start]
+cmd = "php artisan migrate --force && frankenphp run --config /Caddyfile"
