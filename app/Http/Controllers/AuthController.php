@@ -11,74 +11,77 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
-public function register(Request $request)
-{
-    // 1. Validation
-    $validator = Validator::make($request->all(), [
-        'first_name' => 'required|string|max:255',
-        'last_name'  => 'required|string|max:255',
-        'email'      => 'required|string|email|unique:users,email',
-        'password'   => 'required|string|min:6|confirmed',
-    ]);
+    public function register(Request $request)
+    {
 
-    if ($validator->fails()) {
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'required|string|max:255',
+            'last_name'  => 'required|string|max:255',
+            'email'      => 'required|string|email|unique:users,email',
+            'password'   => 'required|string|min:6|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors'  => $validator->errors()
+            ], 422);
+        }
+
+        // ২. ইউজার তৈরি
+        $user = User::create([
+            'first_name' => $request->first_name,
+            'last_name'  => $request->last_name,
+            'email'      => $request->email,
+            'password'   => Hash::make($request->password),
+        ]);
+
+        // ৩. সেশন-বেসড লগইন (এটি কুকি সেট করবে)
+        Auth::login($user);
+        $request->session()->regenerate(); // রেজিস্ট্রেশনের পরেও সেশন রিজেনারেট করা ভালো
+
         return response()->json([
-            'message' => 'Validation failed',
-            'errors'  => $validator->errors()
-        ], 422);
+            'message' => 'Registration successful',
+            'user'    => [
+                'id'    => $user->id,
+                'name'  => $user->first_name . ' ' . $user->last_name,
+                'email' => $user->email,
+            ]
+        ], 201);
     }
 
-    // 2. Create user
-    $user = User::create([
-        'first_name' => $request->first_name,
-        'last_name'  => $request->last_name,
-        'email'      => $request->email,
-        'password'   => Hash::make($request->password),
-    ]);
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email'    => 'required|email',
+            'password' => 'required',
+        ]);
 
-    // 3. ✅ Most important part: Session-based login
-    // This will set the laravel_session cookie in the browser
-    Auth::login($user);
+        if (!Auth::attempt($request->only('email', 'password'))) {
+            return response()->json([
+                'message' => 'Invalid credentials'
+            ], 401);
+        }
 
-    // 4. Send response (no need to send token for session-based auth)
-    return response()->json([
-        'message' => 'Registration successful',
-        'user'    => $user
-    ], 201);
-}
+        $user = Auth::user();
+        
+        // Clear previous tokens
+        $user->tokens()->delete();
+        
+        // Create new token
+        $token = $user->createToken('auth_token')->plainTextToken;
 
-public function login(Request $request)
-{
-    $request->validate([
-        'email'    => 'required|email',
-        'password' => 'required',
-    ]);
-
-    if (!Auth::attempt($request->only('email', 'password'))) {
         return response()->json([
-            'message' => 'Invalid credentials'
-        ], 401);
+            'message'      => 'Login successful',
+            'access_token' => $token,
+            'token_type'   => 'Bearer',
+            'user'         => [
+                'id'    => $user->id,
+                'name'  => $user->first_name . ' ' . $user->last_name, // Adjust based on your fields
+                'email' => $user->email,
+            ]
+        ]);
     }
-
-    $user = Auth::user();
-    
-    // Clear previous tokens
-    $user->tokens()->delete();
-    
-    // Create new token
-    $token = $user->createToken('auth_token')->plainTextToken;
-
-    return response()->json([
-        'message'      => 'Login successful',
-        'access_token' => $token,
-        'token_type'   => 'Bearer',
-        'user'         => [
-            'id'    => $user->id,
-            'name'  => $user->first_name . ' ' . $user->last_name, // Adjust based on your fields
-            'email' => $user->email,
-        ]
-    ]);
-}
 
     public function logout(Request $request) 
     {
